@@ -45,7 +45,6 @@ const WebGLDemo = () => {
         webgl.attachShader(program, fragmentShader);
 
         webgl.linkProgram(program);
-
         // 使用这个program
         webgl.useProgram(program);
 
