@@ -11,6 +11,11 @@ export function createVertexShader(
     gl.shaderSource(vertexShader, shaderSource);
     gl.compileShader(vertexShader);
 
+    // 查看编译错误
+    if (!gl.getShaderParameter(vertexShader, gl.COMPILE_STATUS)) {
+      console.info(gl.getShaderInfoLog(vertexShader));
+    }
+
     return vertexShader;
   } else {
     throw new Error('create shader failed');
@@ -29,6 +34,10 @@ export function createFragmentShader(
   if (fragmentShader) {
     gl.shaderSource(fragmentShader, shaderSource);
     gl.compileShader(fragmentShader);
+
+    if (!gl.getShaderParameter(fragmentShader, gl.COMPILE_STATUS)) {
+      console.info(gl.getShaderInfoLog(fragmentShader));
+    }
 
     return fragmentShader;
   } else {
@@ -57,7 +66,7 @@ export function createWebglProgram(
     gl.attachShader(program, fragmentShader);
     gl.linkProgram(program);
 
-    gl.useProgram(program);
+    // gl.useProgram(program);
 
     return program;
   } else {
