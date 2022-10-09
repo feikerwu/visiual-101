@@ -53,11 +53,7 @@ export function createWebglProgram(
 ) {
   const vertexShader = createVertexShader(gl, vertexShaderSource);
 
-  console.log(vertexShader);
-
   const fragmentShader = createFragmentShader(gl, fragmentShaderSource);
-
-  console.log(fragmentShader);
 
   const program = gl.createProgram();
 
