@@ -69,3 +69,10 @@ export function createWebglProgram(
     throw new Error('create program failed');
   }
 }
+
+export function createBuffer(gl: WebGLRenderingContext, data) {
+  const bufferId = gl.createBuffer();
+  gl.bindBuffer(gl.ARRAY_BUFFER, bufferId);
+  gl.bufferData(gl.ARRAY_BUFFER, data, gl.STATIC_DRAW);
+  return bufferId;
+}
