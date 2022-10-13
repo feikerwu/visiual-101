@@ -13,7 +13,7 @@ function randomColor(): Color {
 
 const RandomPoints = () => {
   const ref = useRef<HTMLCanvasElement>(null);
-  const [points, setPoints] = useState<Array<number>>([]);
+  const [points, setPoints] = useState<Array<{ x: number; y: number }>>([]);
 
   // 在 hook 内每次触发 react 刷新导致的
   useEffect(() => {
@@ -25,23 +25,28 @@ const RandomPoints = () => {
           precision mediump float;
           attribute vec2 custom_position;
           attribute vec2 canvas_size;
+          attribute vec4 custom_color;
+          varying vec4 u_color;
 
           void main() {
             // 将canvas内的坐标系转换为NOC坐标
             vec2 position = (custom_position / canvas_size) * 2.0 - 1.0;
+
             // 坐标系反转
             position = position * vec2(1.0, -1.0);
             gl_Position = vec4(position.x, position.y, 0, 1);
             // gl_Position = vec4(0.0, 0.0, 0.0, 1.0);
-            gl_PointSize = 10.0;
+            gl_PointSize = 1.0;
+            u_color = custom_color;
+
           }
         `;
         const fragmentShader = `
           precision mediump float;
-          uniform vec4 u_Color;
+          varying vec4 u_color;
 
           void main() {
-            vec4 color = u_Color / vec4(255.0, 255.0, 255.0, 1.0);
+            vec4 color = u_color / vec4(255.0, 255.0, 255.0, 1.0);
             gl_FragColor = color;
           }
         `;
@@ -56,8 +61,9 @@ const RandomPoints = () => {
             'custom_position'
           );
 
+          const custom_color = gl.getAttribLocation(program, 'custom_color');
           const canvas_size = gl.getAttribLocation(program, 'canvas_size');
-          const u_Color = gl.getUniformLocation(program, 'u_Color');
+          const u_Color = gl.getUniformLocation(program, 'u_color');
 
           // console.log(ref.current.width, ref.current.height);
           gl.vertexAttrib2f(
@@ -70,18 +76,26 @@ const RandomPoints = () => {
 
           // console.log(points);
 
-          console.log(points.length);
-          if (points.length % 6 === 0) {
+          if (points.length > 0) {
             gl.clearColor(0.0, 0.0, 0.0, 1.0);
             gl.clear(gl.COLOR_BUFFER_BIT);
 
-            let trianglesPoints = new Float32Array(points);
-            createBuffer(gl, trianglesPoints);
+            let trianglesPoints: number[] = [];
+            for (let { x, y } of points) {
+              trianglesPoints.push(x, y, ...randomColor());
+            }
 
-            // 缓存区数据获取
+            createBuffer(gl, new Float32Array(trianglesPoints));
+
+            // 缓存区数据获取节点位置
             gl.enableVertexAttribArray(custom_position);
-            gl.vertexAttribPointer(custom_position, 2, gl.FLOAT, false, 0, 0);
-            gl.drawArrays(gl.TRIANGLES, 0, points.length / 2);
+            gl.vertexAttribPointer(custom_position, 2, gl.FLOAT, false, 6, 0);
+
+            // 缓存区数据获取颜色
+            gl.enableVertexAttribArray(custom_color);
+            gl.vertexAttribPointer(custom_color, 4, gl.FLOAT, false, 6, 2);
+
+            gl.drawArrays(gl.LINE_STRIP, 0, points.length / 6);
           }
         }
       }
@@ -93,7 +107,7 @@ const RandomPoints = () => {
     if (canvas) {
       const handleClick = e => {
         const newPoints = [...points];
-        newPoints.push(e.offsetX, e.offsetY);
+        newPoints.push({ x: e.pageX, y: e.pageY });
 
         setPoints(newPoints);
 
