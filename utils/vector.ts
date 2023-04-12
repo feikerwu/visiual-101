@@ -1,3 +1,7 @@
+type Vector2DOptions = {
+  x: number;
+  y: number;
+};
 export class Vector2D {
   /**
    * x 坐标
@@ -41,3 +45,5 @@ export class Vector2D {
     this.y = this.y + ver.y;
   }
 }
+
+export class Point extends Vector2D {}
